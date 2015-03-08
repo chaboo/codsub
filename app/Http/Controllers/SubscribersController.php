@@ -17,56 +17,56 @@ use Bus;
 
 class SubscribersController extends Controller {
 
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create()
-	{
-		return view('subscribers.create');
-	}
+  /**
+   * Show the form for creating a new resource.
+   *
+   * @return Response
+   */
+  public function create()
+  {
+    return view('subscribers.create');
+  }
 
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @return Response
-	 */
-	public function store(CreateSubscriptionRequest $request)
-	{
-		$existing = Subscriber::whereEmail($request->get('email'))->first();
-		
-		// subscription request from already verified subscriber
-		if ($existing && $existing->verified) {
-			\Event::fire(new DuplicateSubscriptionWasRequested($existing));
-			return view('subscribers.duplicate');
-		}
+  /**
+   * Store a newly created resource in storage.
+   *
+   * @return Response
+   */
+  public function store(CreateSubscriptionRequest $request)
+  {
+    $existing = Subscriber::whereEmail($request->get('email'))->first();
 
-		// new subscription request for
-		// previously seen but not yet verified subscriber 
-		if($existing) {
-			Bus::dispatch(new ReverifySubscriptionCommand($request->get('email')));
-			return view('subscribers.verify');
-		}
+    // subscription request from already verified subscriber
+    if ($existing && $existing->verified) {
+      \Event::fire(new DuplicateSubscriptionWasRequested($existing));
+      return view('subscribers.duplicate');
+    }
 
-		// new subscription request
-		Bus::dispatchFrom(CreateSubscriptionCommand::class, $request);
-		return view('subscribers.verify');
-	}
+    // new subscription request for
+    // previously seen but not yet verified subscriber 
+    if($existing) {
+      Bus::dispatch(new ReverifySubscriptionCommand($request->get('email')));
+      return view('subscribers.verify');
+    }
 
-	public function verify($token)
-	{
-		if (! $token) {
-			return redirect()->route('home');
-		}
+    // new subscription request
+    Bus::dispatchFrom(CreateSubscriptionCommand::class, $request);
+    return view('subscribers.verify');
+  }
 
-		$subscriber = Subscriber::whereVerificationToken($token)->first();
+  public function verify($token)
+  {
+    if (! $token) {
+      return redirect()->route('home');
+    }
 
-		if (! $subscriber) {
-			return redirect()->route('home');
-		}
+    $subscriber = Subscriber::whereVerificationToken($token)->first();
 
-		Bus::dispatch(new VerifySubscriptionCommand($subscriber));
-		return view('subscribers.verified');
-	}
+    if (! $subscriber) {
+      return redirect()->route('home');
+    }
+
+    Bus::dispatch(new VerifySubscriptionCommand($subscriber));
+    return view('subscribers.verified');
+  }
 }

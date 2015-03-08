@@ -7,17 +7,17 @@ use App\Subscriber;
 
 class DuplicateSubscriptionWasRequested extends Event {
 
-	use SerializesModels;
+  use SerializesModels;
 
   public $subscriber;
-	/**
-	 * Create a new event instance.
-	 *
-	 * @return void
-	 */
-	public function __construct(Subscriber $subscriber)
-	{
-		$this->subscriber = $subscriber;
-	}
+  /**
+   * Create a new event instance.
+   *
+   * @return void
+   */
+  public function __construct(Subscriber $subscriber)
+  {
+    $this->subscriber = $subscriber;
+  }
 
 }

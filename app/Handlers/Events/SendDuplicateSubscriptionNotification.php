@@ -8,36 +8,36 @@ use Mail;
 
 class SendDuplicateSubscriptionNotification implements ShouldBeQueued {
 
-	use InteractsWithQueue;
+  use InteractsWithQueue;
 
-	/**
-	 * Create the event handler.
-	 *
-	 * @return void
-	 */
-	public function __construct()
-	{
-		//
-	}
+  /**
+   * Create the event handler.
+   *
+   * @return void
+   */
+  public function __construct()
+  {
+    //
+  }
 
-	/**
-	 * Handle the event.
-	 *
-	 * @param  DuplicateSubscriptionWasRequested  $event
-	 * @return void
-	 */
-	public function handle(DuplicateSubscriptionWasRequested $event)
-	{
-		$subscriber = $event->subscriber;
-		$view = 'duplicate';
-		$views = [ 
+  /**
+   * Handle the event.
+   *
+   * @param  DuplicateSubscriptionWasRequested  $event
+   * @return void
+   */
+  public function handle(DuplicateSubscriptionWasRequested $event)
+  {
+    $subscriber = $event->subscriber;
+    $view = 'duplicate';
+    $views = [ 
       'emails.'.$view.'_html',
       'emails.'.$view.'_text',
     ];
 
-		Mail::send($views, [], function($message) use ($subscriber) {
-			$message->to($subscriber->email, $subscriber->name())->subject('Duplicate subscription!');
-		});
-	}
+    Mail::send($views, [], function($message) use ($subscriber) {
+      $message->to($subscriber->email, $subscriber->name())->subject('Duplicate subscription!');
+    });
+  }
 
 }

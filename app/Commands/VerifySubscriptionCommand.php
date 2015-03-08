@@ -8,30 +8,30 @@ use App\Subscriber;
 
 class VerifySubscriptionCommand extends Command implements SelfHandling {
 
-	public $subscriber;
+  public $subscriber;
 
-	/**
-	 * Create a new command instance.
-	 *
-	 * @return void
-	 */
-	public function __construct(Subscriber $subscriber)
-	{
-		$this->subscriber = $subscriber;
-	}
+  /**
+   * Create a new command instance.
+   *
+   * @return void
+   */
+  public function __construct(Subscriber $subscriber)
+  {
+    $this->subscriber = $subscriber;
+  }
 
-	/**
-	 * Execute the command.
-	 *
-	 * @return void
-	 */
-	public function handle()
-	{
-		$this->subscriber->verified = 1;
-		$this->subscriber->verification_token = null;
-		$this->subscriber->save();
+  /**
+   * Execute the command.
+   *
+   * @return void
+   */
+  public function handle()
+  {
+    $this->subscriber->verified = 1;
+    $this->subscriber->verification_token = null;
+    $this->subscriber->save();
 
-		\Event::fire(new SubscriptionWasVerified($this->subscriber));
-	}
+    \Event::fire(new SubscriptionWasVerified($this->subscriber));
+  }
 
 }
