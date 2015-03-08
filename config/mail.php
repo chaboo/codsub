@@ -54,7 +54,7 @@ return [
 	|
 	*/
 
-	'from' => ['address' => 'noreply@codsub.com', 'name' => 'CodSub Support'],
+	'from' => ['address' => 'noreply@codsub.app', 'name' => 'Codsub Support'],
 
 	/*
 	|--------------------------------------------------------------------------

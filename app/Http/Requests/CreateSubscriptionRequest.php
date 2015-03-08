@@ -2,7 +2,7 @@
 
 use App\Http\Requests\Request;
 
-class CreateSubscriberRequest extends Request {
+class CreateSubscriptionRequest extends Request {
 
 	/**
 	 * Determine if the user is authorized to make this request.

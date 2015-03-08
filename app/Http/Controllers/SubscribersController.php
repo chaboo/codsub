@@ -3,9 +3,17 @@
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
-use App\Http\Requests\CreateSubscriberRequest;
+use App\Http\Requests\CreateSubscriptionRequest;
+
+use App\Events\DuplicateSubscriptionWasRequested;
+
+use App\Commands\CreateSubscriptionCommand;
+use App\Commands\ReverifySubscriptionCommand;
+use App\Commands\VerifySubscriptionCommand;
+
 use App\Subscriber;
-use Mail;
+
+use Bus;
 
 class SubscribersController extends Controller {
 
@@ -24,80 +32,41 @@ class SubscribersController extends Controller {
 	 *
 	 * @return Response
 	 */
-	public function store(CreateSubscriberRequest $request, Subscriber $subscriber)
+	public function store(CreateSubscriptionRequest $request)
 	{
-		$email = $request->get('email');
-		$existing = Subscriber::whereEmail($email)->first();
+		$existing = Subscriber::whereEmail($request->get('email'))->first();
 		
-		if ($existing) {
-			$s = $existing;
-			$status = $existing->verified ? 3: 2;
-			if ($status === 2) {
-				$s->verification_token = str_random(30);
-				$s->save();
-
-				$view = 'verify';
-				$views = [
-	        'emails.'.$view.'_html',
-	        'emails.'.$view.'_text',
-	      ];
-
-				Mail::queue($views, compact('s'), function($message) use ($s) {
-					$message->to($s->email, $s->name())->subject('Please verify your subscription!');
-				});
-			}
-			else {
-				$view = 'notify';
-				$views = [
-	        'emails.'.$view.'_html',
-	        'emails.'.$view.'_text',
-	      ];
-
-				Mail::queue($views, compact('s'), function($message) use ($s) {
-					$message->to($s->email, $s->name())->subject('You are already subscribed!');
-				});
-			}
-
+		// subscription request from already verified subscriber
+		if ($existing && $existing->verified) {
+			\Event::fire(new DuplicateSubscriptionWasRequested($existing));
+			return view('subscribers.duplicate');
 		}
-		else {
-			$status = 1;
-			$view = 'verify';
-			$views = [
-        'emails.'.$view.'_html',
-        'emails.'.$view.'_text',
-      ];
 
-			$s = Subscriber::create([
-				'first_name' 					=> $request->get('first_name'),
-				'last_name' 					=> $request->get('last_name'),
-				'email' 							=> $request->get('email'),
-				'verification_token' 	=> str_random(30)
-			]);
-
-			Mail::queue($views, compact('s'), function($message) use ($s) {
-				$message->to($s->email, $s->name())->subject('Please verify your subscription!');
-			});
+		// new subscription request for
+		// previously seen but not yet verified subscriber 
+		if($existing) {
+			Bus::dispatch(new ReverifySubscriptionCommand($request->get('email')));
+			return view('subscribers.verify');
 		}
-		
-		return view('subscribers.status', compact('status'));
+
+		// new subscription request
+		Bus::dispatchFrom(CreateSubscriptionCommand::class, $request);
+		return view('subscribers.verify');
 	}
 
 	public function verify($token)
 	{
-		if ( ! $token) {
+		if (! $token) {
 			return redirect()->route('home');
 		}
 
-		$s = Subscriber::whereVerificationToken($token)->first();
+		$subscriber = Subscriber::whereVerificationToken($token)->first();
 
-		if (! $s) {
+		if (! $subscriber) {
 			return redirect()->route('home');
 		}
 
-		$s->verified = 1;
-		$s->verification_token = null;
-		$s->save();
-
+		Bus::dispatch(new VerifySubscriptionCommand($subscriber));
 		return view('subscribers.verified');
 	}
 }

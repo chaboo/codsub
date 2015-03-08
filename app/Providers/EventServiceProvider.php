@@ -1,5 +1,13 @@
 <?php namespace App\Providers;
 
+use App\Events\DuplicateSubscriptionWasRequested;
+use App\Events\SubscriptionWasVerified;
+use App\Events\SubscriptionWasRequested;
+
+use App\Handlers\Events\SendDuplicateSubscriptionNotification;
+use App\Handlers\Events\SendSubscriptionVerificationNotification;
+use App\Handlers\Events\SendSubscriptionVerificationRequest;
+
 use Illuminate\Contracts\Events\Dispatcher as DispatcherContract;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -14,6 +22,16 @@ class EventServiceProvider extends ServiceProvider {
 		'event.name' => [
 			'EventListener',
 		],
+
+		SubscriptionWasRequested::class => [
+			SendSubscriptionVerificationRequest::class,
+		],
+		SubscriptionWasVerified::class => [
+			SendSubscriptionVerificationNotification::class,
+		],
+		DuplicateSubscriptionWasRequested::class => [
+			SendDuplicateSubscriptionNotification::class,
+		]		
 	];
 
 	/**
