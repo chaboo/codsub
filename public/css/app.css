@@ -6258,5 +6258,9 @@ html,
 body {
   height: 100%;
 }
+.help-block ul {
+  list-style: none;
+  padding-left: 0;
+}
 
 /*# sourceMappingURL=app.css.map */
