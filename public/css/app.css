@@ -6231,3 +6231,32 @@ label,
 .checkbox label {
   font-weight: 300;
 }
+#grad {
+  /* fallback */
+  background-color: #f6f6f6;
+}
+.wrapper {
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-justify-content: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+.item {
+  margin-top: 80px;
+  padding: 10px 40px 30px 40px;
+  background-color: #ffffff;
+  box-shadow: 0px 1px 4px 0px rgba(0, 0, 0, 0.2);
+  border-radius: 5px;
+  max-width: 400px;
+  -webkit-flex: 1;
+      -ms-flex: 1;
+          flex: 1;
+}
+html,
+body {
+  height: 100%;
+}
+
+/*# sourceMappingURL=app.css.map */
